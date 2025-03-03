@@ -3,6 +3,7 @@ import json
 import os
 import socket
 import sys
+from datetime import datetime
 
 def safe_split_tags(tags_str):
     tag_dict = {}
@@ -45,16 +46,17 @@ def parse_openvas_xml(file_path):
     
     return results
 
-def save_json(data, output_filename):
+def save_json(data, output_dir):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_filename = os.path.join(output_dir, f"scan_{timestamp}.json")
     with open(output_filename, "w") as json_file:
         for entry in data:
             json_file.write(json.dumps(entry) + "\n")
     print(f"Saved JSON report: {output_filename}")
 
 def process_file(file_path, output_dir):
-    output_filename = os.path.join(output_dir, os.path.basename(file_path).replace(".xml", ".json"))
     results = parse_openvas_xml(file_path)
-    save_json(results, output_filename)
+    save_json(results, output_dir)
 
 def tcp_listener(port, output_dir):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -74,7 +76,8 @@ def tcp_listener(port, output_dir):
         client_socket.close()
         
         if data:
-            file_path = os.path.join(output_dir, "scan_received.xml")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            file_path = os.path.join(output_dir, f"scan_{timestamp}.xml")
             with open(file_path, "wb") as f:
                 f.write(data)
             print(f"Received XML saved to {file_path}")
