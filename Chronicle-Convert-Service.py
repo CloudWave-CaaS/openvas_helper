@@ -93,7 +93,7 @@ def main():
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
     
-    PORT = 9999
+    PORT = 7680
     tcp_listener(PORT, OUTPUT_DIR)
 
 if __name__ == "__main__":
