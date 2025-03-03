@@ -5,7 +5,7 @@ import sys
 import argparse
 
 # Output directory
-OUTPUT_DIR = "."
+OUTPUT_DIR = "/var/log/scans/"
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
