@@ -22,6 +22,9 @@ def clean_text(text):
     text = text.replace('\n', ' ')
     return ' '.join(text.split())
 
+def is_all_na(entry):
+    return all(value == "N/A" or value == "" for key, value in entry.items() if key != "id")
+
 def parse_openvas_xml(file_path):
     tree = ET.parse(file_path)
     root = tree.getroot()
@@ -42,7 +45,9 @@ def parse_openvas_xml(file_path):
 
         tags = result.findtext("nvt/tags", default="")
         result_data["tags"] = safe_split_tags(tags)
-        results.append(result_data)
+
+        if not is_all_na(result_data):
+            results.append(result_data)
     
     return results
 
@@ -88,7 +93,7 @@ def main():
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
     
-    PORT = 7680
+    PORT = 9999
     tcp_listener(PORT, OUTPUT_DIR)
 
 if __name__ == "__main__":
