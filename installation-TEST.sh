@@ -4,7 +4,6 @@ set -e
 
 # Define paths
 SERVICE_FILE="/etc/systemd/system/openvas_listener.service"
-OTEL_CONFIG="/opt/observiq-otel-collector/config.yaml"
 BIN_DIR="/usr/local/bin"
 LOG_DIR="/var/log/scans"
 
@@ -43,26 +42,5 @@ systemctl daemon-reload
 systemctl enable openvas_listener
 systemctl restart openvas_listener
 
-# Modify ObservIQ OpenTelemetry config
-if [ -f "$OTEL_CONFIG" ]; then
-    # Comment out the existing tcplog section
-    sed -i '/tcplog:/,/^$/ s/^/#/' "$OTEL_CONFIG"
-    
-    # Add filelog configuration
-    cat <<EOT >> "$OTEL_CONFIG"
-filelog/openvas_results:
-    include:
-    - /var/log/scans/*.csv
-    - /var/log/scans/*.json
-    attributes:
-      chronicle_log_type: OPENVAS
-EOT
 
-    # Replace "- tcplog" with "- filelog/nix_system"
-    sed -i 's/- tcplog/- filelog\/nix_system/g' "$OTEL_CONFIG"
-
-    # Restart ObservIQ collector
-    systemctl restart observiq-otel-collector
-fi
-
-echo "Installation complete. Service and OpenTelemetry configuration updated."
+echo "Installation complete. Service configuration updated."
