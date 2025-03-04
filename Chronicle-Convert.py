@@ -3,11 +3,18 @@ import json
 import os
 import sys
 import argparse
+import socket
+from datetime import datetime
 
 # Output directory
 OUTPUT_DIR = "/var/log/scans/"
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
+
+def get_system_info():
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return hostname, ip_address
 
 def safe_split_tags(tags_str):
     tag_dict = {}
@@ -26,10 +33,15 @@ def clean_text(text):
     text = text.replace('\n', ' ')
     return ' '.join(text.split())
 
+def is_all_na(entry):
+    return all(value == "N/A" or value == "" for key, value in entry.items() if key != "id")
+
 def parse_openvas_xml(file_path):
     tree = ET.parse(file_path)
     root = tree.getroot()
     results = []
+    hostname, ip_address = get_system_info()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     for result in root.findall(".//result"):
         result_data = {
@@ -42,11 +54,16 @@ def parse_openvas_xml(file_path):
             "original_threat": result.findtext("original_threat", default="N/A"),
             "original_severity": result.findtext("original_severity", default="N/A"),
             "description": clean_text(result.findtext("description", default="")),
+            "hostname": hostname,
+            "ip_address": ip_address,
+            "processed_timestamp": timestamp
         }
 
         tags = result.findtext("nvt/tags", default="")
         result_data["tags"] = safe_split_tags(tags)
-        results.append(result_data)
+
+        if not is_all_na(result_data):
+            results.append(result_data)
     
     return results
 
@@ -57,7 +74,8 @@ def save_json(data, output_filename):
     print(f"Saved JSON report: {output_filename}")
 
 def process_file(file_path):
-    output_filename = os.path.join(OUTPUT_DIR, os.path.basename(file_path).replace(".xml", ".json"))
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_filename = os.path.join(OUTPUT_DIR, f"scan_{timestamp}.json")
     results = parse_openvas_xml(file_path)
     save_json(results, output_filename)
 
