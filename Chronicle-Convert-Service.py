@@ -5,6 +5,11 @@ import socket
 import sys
 from datetime import datetime
 
+def get_system_info():
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return hostname, ip_address
+
 def safe_split_tags(tags_str):
     tag_dict = {}
     tags_list = tags_str.split('|')
@@ -29,6 +34,8 @@ def parse_openvas_xml(file_path):
     tree = ET.parse(file_path)
     root = tree.getroot()
     results = []
+    hostname, ip_address = get_system_info()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     for result in root.findall(".//result"):
         result_data = {
@@ -41,6 +48,9 @@ def parse_openvas_xml(file_path):
             "original_threat": result.findtext("original_threat", default="N/A"),
             "original_severity": result.findtext("original_severity", default="N/A"),
             "description": clean_text(result.findtext("description", default="")),
+            "hostname": hostname,
+            "ip_address": ip_address,
+            "processed_timestamp": timestamp
         }
 
         tags = result.findtext("nvt/tags", default="")
