@@ -46,13 +46,15 @@ def parse_openvas_xml(file_path):
     
     # Extract report-level attributes
     report = root.find(".//report")
+    task = root.find(".//task")  # Find task outside of report
+    
     report_attributes = {
         "report_id": report.get("id", "N/A"),
         "report_format_id": report.get("format_id", "N/A"),
         "report_scan_start": report.findtext("scan_start", default="N/A"),
-        "report_task_id": report.find("task").get("id", "N/A") if report.find("task") is not None else "N/A",
-        "report_task_name": report.findtext("task/name", default="N/A"),
-    }
+        "report_task_id": task.get("id", "N/A") if task is not None else "N/A",
+        "report_task_name": clean_text(task.findtext("name", default="N/A")) if task is not None else "N/A",
+      }
 
     for result in root.findall(".//result"):
         result_data = {
