@@ -42,6 +42,17 @@ def parse_openvas_xml(file_path):
     results = []
     hostname, ip_address = get_system_info()
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    
+    # Extract report-level attributes
+    report = root.find(".//report")
+    report_attributes = {
+        "report_id": report.get("id", "N/A"),
+        "report_format_id": report.get("format_id", "N/A"),
+        "report_scan_start": report.findtext("scan_start", default="N/A"),
+        "report_task_id": report.find("task").get("id", "N/A") if report.find("task") is not None else "N/A",
+        "report_task_name": report.findtext("task/name", default="N/A"),
+    }
 
     for result in root.findall(".//result"):
         result_data = {
@@ -56,7 +67,8 @@ def parse_openvas_xml(file_path):
             "description": clean_text(result.findtext("description", default="")),
             "hostname": hostname,
             "ip_address": ip_address,
-            "processed_timestamp": timestamp
+            "processed_timestamp": timestamp,
+            **report_attributes  # Include report-level attributes
         }
 
         tags = result.findtext("nvt/tags", default="")
