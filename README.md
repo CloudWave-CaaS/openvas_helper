@@ -1,3 +1,5 @@
+Install with:
+`curl -sSL https://raw.githubusercontent.com/CloudWave-CaaS/openvas_helper/refs/heads/main/installation-TEST.sh | bash`
 
 These scripts convert OpenVAS output to JSON for easy ingestion.
 
