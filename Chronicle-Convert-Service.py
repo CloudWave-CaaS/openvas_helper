@@ -61,7 +61,7 @@ def parse_openvas_xml(file_path):
             "original_threat": result.findtext("original_threat", default="N/A"),
             "original_severity": result.findtext("original_severity", default="N/A"),
             "description": clean_text(result.findtext("description", default="")),
-            "hostname": result.findtext("hostname", default="N/A"),
+            "hostname": clean_text(result.find("host/hostname").text),
             "scanner_hostname": hostname,
             "ip_address": ip_address,
             "processed_timestamp": timestamp,
