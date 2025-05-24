@@ -14,7 +14,7 @@ if not os.path.exists(OUTPUT_DIR):
 def get_system_info():
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
-    return ip_address
+    return hostname, ip_address
 
 def safe_split_tags(tags_str):
     tag_dict = {}
@@ -40,7 +40,7 @@ def parse_openvas_xml(file_path):
     tree = ET.parse(file_path)
     root = tree.getroot()
     results = []
-    ip_address = get_system_info()
+    hostname, ip_address = get_system_info()
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     
@@ -69,6 +69,7 @@ def parse_openvas_xml(file_path):
             "original_severity": result.findtext("original_severity", default="N/A"),
             "description": clean_text(result.findtext("description", default="")),
             "hostname": result.findtext("hostname", default="N/A"),
+            "scanner_hostname": hostname,
             "ip_address": ip_address,
             "processed_timestamp": timestamp,
             **report_attributes  # Include report-level attributes
